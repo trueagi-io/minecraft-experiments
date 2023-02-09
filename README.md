@@ -2,6 +2,9 @@
 
 This repo contains experimental scripts for Vereya mod, which go beyond examples presented in minecraft-demo
 
+You need tagilmo library (VereyaPython module) to be installed to work with this experiments.
+pip install git+https://github.com/trueagi-io/minecraft-demo.git
+
 dataset for pixel classification model 
 ```https://drive.google.com/drive/folders/1FpcZvUGVWG_oz1s_gnlc9X82hx6qaIXA?usp=sharing```
 
