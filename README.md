@@ -29,3 +29,17 @@ cliff_v2 - visual target-approaching agent. Used in 5_mine_and_craft_with_a_pinc
 which is available for MalmoPython lib and minecraft 1.11.2. (moved to deprecated)
 
 cliff_v3 - Q-learning based visual target-approaching agent (moved to deprecated)
+
+behaviour folder contains template of And-Or behaviour tree and implementation of experimental behaviours
+
+block_analysis folder contains experiments that collect different visual features statistics for every block seen by an agent
+
+deprecated folder contains experiments that normally work with minecraft 1.12.1 but no longer supported for 1.18.* and higher
+
+external folder contains necessary modules to run the experiments
+
+trainable folder contains experimental scripts for trained/(potentially) trainable agent's micro skills
+
+utils folder contains auxiliary modules for training, preparation of datasets and other non-primary functionality.
+
+vision_tests folder contains experimental scripts for testing "visual perception" procedures
