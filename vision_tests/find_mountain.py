@@ -125,8 +125,8 @@ def setup_logger():
 
 if __name__ == '__main__':
     setup_logger()
-    from external.neural import NeuralWrapper, get_image
-    from external.vis import Visualizer
+    from mcdemoaux.vision.neural import NeuralWrapper, get_image
+    from mcdemoaux.vision.vis import Visualizer
     visualizer = Visualizer() 
     visualizer.start()
     mc, obs = start_mission()

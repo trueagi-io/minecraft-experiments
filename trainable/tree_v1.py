@@ -8,17 +8,18 @@ import time
 import torch
 from torch import nn
 import os
-from external import network
+from mcdemoaux.vision import network
 import numpy
 
 import tagilmo.utils.mission_builder as mb
 from tagilmo.utils.vereya_wrapper import MCConnector
-from external import common
+from mcdemoaux.vision.common import BaseLoader
+from utils import common
 from utils.common import stop_motion
 from tagilmo.utils.mathutils import toRadAndNorm
-from external.vgg import VGG
-from external.goodpoint import GoodPoint
-from external.pyramidpooling import PyramidPooling
+from mcdemoaux.vision.vgg import VGG
+from mcdemoaux.vision.goodpoint import GoodPoint
+from mcdemoaux.vision.pyramidpooling import PyramidPooling
 
 
 mission_ending = """
@@ -250,7 +251,7 @@ class Trainer(common.Trainer):
         return mc
 
 
-class SearchTree(network.ContiniousActionAgent, VGG, common.BaseLoader):
+class SearchTree(network.ContiniousActionAgent, VGG, BaseLoader):
     def __init__(self, actions, pos_enc_len, n_channels=1, activation=nn.LeakyReLU(), block_net=None):
         super().__init__(actions)
         stride = 1

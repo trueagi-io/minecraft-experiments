@@ -7,12 +7,12 @@ import time
 import torch
 from torch import nn
 import os
-from external import network
+from mcdemoaux.vision import network
 import numpy
 
 import tagilmo.utils.mission_builder as mb
 from tagilmo.utils.vereya_wrapper import MCConnector
-from external import common
+from utils import common
 from utils.common import stop_motion
 from tagilmo.utils.mathutils import toRadAndNorm
 

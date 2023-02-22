@@ -7,15 +7,15 @@ import time
 import torch
 from torch import nn
 import os
-from external import network
-from external.network import QVisualNetwork
+from mcdemoaux.vision import network
+from mcdemoaux.vision.network import QVisualNetwork
 import numpy
 import cv2
 from collections import deque
 
 import tagilmo.utils.mission_builder as mb
 from tagilmo.utils.vereya_wrapper import MCConnector
-from external import common
+from utils import common
 from utils.common import stop_motion
 from tagilmo.utils.mathutils import toRadAndNorm
 

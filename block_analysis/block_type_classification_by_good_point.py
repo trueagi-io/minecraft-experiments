@@ -6,9 +6,9 @@ import json
 from time import sleep, time
 import tagilmo.utils.mission_builder as mb
 
-from external.agent import TAgent
+from mcdemoaux.agenttools.agent import TAgent
 import logging
-from external.vis import Visualizer
+from mcdemoaux.vision.vis import Visualizer
 
 
 import sys

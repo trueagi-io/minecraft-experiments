@@ -13,7 +13,7 @@ from utils.common import stop_motion
 from tagilmo.utils.mathutils import normAngle, toRadAndNorm, degree2rad
 
 from trainable import tree
-from external.goodpoint import GoodPoint
+from mcdemoaux.vision.goodpoint import GoodPoint
 
 
 def load_agent(path):

@@ -2,7 +2,7 @@ import cv2
 from utils.common import *
 import numpy
 import time
-from external.neural import get_image
+from mcdemoaux.vision.neural import get_image
 from tagilmo.utils.vereya_wrapper import MCConnector, RobustObserverWithCallbacks
 import tagilmo.utils.mission_builder as mb
 

@@ -8,7 +8,7 @@ import time
 import torch
 from torch import nn
 import os
-from external import network
+from mcdemoaux.vision import network
 import numpy
 import copy
 from collections import deque
@@ -16,7 +16,7 @@ import tagilmo.utils.mission_builder as mb
 from tagilmo.utils.vereya_wrapper import MCConnector
 from utils import common
 from utils.common import stop_motion
-from external.network import QVisualNetwork
+from mcdemoaux.vision.network import QVisualNetwork
 
 BLOCK_TYPE = 0
 HEIGHT = 2
