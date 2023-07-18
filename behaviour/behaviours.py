@@ -32,7 +32,7 @@ class CheckVisible(Base):
         if segm_data is None:
             return status, result
         ray = self.rob.getCachedObserve('getLineOfSights')
-        if ray is not None and ray['type'] == 'stone':
+        if ray is not None and ray['hitType'] != 'MISS' and ray['type'] == 'stone':
             self.found_item = ray 
             return 'success', ['pitch 0', 'turn 0']
         if segm_data is not None:
