@@ -9,11 +9,6 @@ from tagilmo.VereyaPython import setupLogger
 import logging
 import time
 
-SCALE = 2
-RESIZE = 1
-HEIGHT = 240 * SCALE
-WIDTH = 320 * SCALE
-
 
 def runSkill(rob):
     skill = MountainScan(rob)
