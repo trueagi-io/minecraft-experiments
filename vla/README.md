@@ -49,7 +49,7 @@
    - 2x features for 2x H/W compression without T compression
      One layer reconstruction loss (L-0): 0.00071 (AE), which
      better than non-causal 3D AE, but still worse than 2D AE.
-   - May still be underlearned.
+   - May still be undertrained.
    - ------------------
    - Causal AE can be used for prediction. To do this, one just needs to
      pass shifted input to reconstruction loss
@@ -72,3 +72,31 @@
      worse than SGD optimization, but faster and hopefully more stable) /
      0.00048 (main AE only - can be improved but makes z optimization worse
      for some reason)
+
+
+  * vt_0_learn.py
+    - Factorized spatial/temporal transformer predictor on top of AE features.
+    - 3 spatial + 4 temporal attention layers are tested.
+    - Prediction loss of dense layer-4 AE features - 0.0020
+    - Prediction loss of sparse layer-4 AE features - 0.00031
+      (losses on sparse and dense latents cannot be compared, however, reconstruction
+      from prediction of dense latents looks just like blurring, while in the case
+      of sparse latents motion is in general predicted)
+    - Sparse latents prediction by Transformer is similar in quality to dense
+      3D causal convolution-based prediction. The former produces more stable
+      results, which degrade slower over time, and which can remain unblurred for
+      static camera. The latter can reproduce, what was outside the current frame
+      several frames ago, but its results degrade due to increasing artefacts
+      even for a static camera.
+
+  * vt_0e_learn.py (kinda negative despite reasonable loss)
+      - end-to-end Transformer+AE fine-tuning on pixel-level next frame prediction.
+      - Pixel-level prediction loss - 0.00228 - very close to causal convolution.
+      - Quality is worse than for latent code prediction by Transformer, because
+        Transformer still produces the predicted latent code, which is worsened
+        by decoding-encoding. If one tries to do autoregressive prediction of
+        the latent code without decoding-encoding, this makes things even worse,
+        because encoder and decoder are not in correspondence anymore. Transformer
+        predicts the latent code, which is good for decoder, but this is not the same
+        latent code, which is constructed by encoder.
+      - This end-to-end fine-tuning doesn't seem like a good idea in such settings.

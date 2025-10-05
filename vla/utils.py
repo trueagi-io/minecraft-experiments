@@ -65,6 +65,24 @@ class VideoClipDataset(Dataset):
         return clip
 
 
+class VideoPredictDataset(Dataset):
+    def __init__(self, videos):
+        """
+        videos: list of clips with shape: (T+1, H, W, C)
+        These can be either preprocessed latents or original videos
+        """
+        self.videos = videos
+
+    def __len__(self):
+        return len(self.videos)
+
+    def __getitem__(self, idx):
+        clip = self.videos[idx]
+        x = clip[:-1]  # T frames - input
+        y = clip[-1]   # Last frame - target
+        return x, y
+
+
 def show_frame(real, fake):
     plt.close()
     # if len(real.shape) > 3 ...

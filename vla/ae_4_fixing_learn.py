@@ -8,7 +8,7 @@ from utils import *
 from aeblock import *
 
 
-def train_model(dataloader, aes, epoches=30, lr=1e-4):
+def train_model(dataloader, aes, epochs=30, lr=1e-4):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     aes = aes.to(device)
@@ -19,7 +19,7 @@ def train_model(dataloader, aes, epoches=30, lr=1e-4):
     loss_fn = nn.MSELoss()
     best_loss = 1e+10
 
-    for epoch in range(epoches):
+    for epoch in range(epochs):
         total_loss1 = 0.0
         total_loss2 = 0.0
 
@@ -58,7 +58,7 @@ def train_model(dataloader, aes, epoches=30, lr=1e-4):
         #    torch.save(ae.to('cpu').to_dict(), "aest_stack3block.pth")
         #    ae.to('cuda')
 
-        print(f"[Epoch {epoch + 1}/{epoches}] Loss: {total_loss1 / len(dataloader):.6f} {total_loss2 / len(dataloader):.6f}")
+        print(f"[Epoch {epoch + 1}/{epochs}] Loss: {total_loss1 / len(dataloader):.6f} {total_loss2 / len(dataloader):.6f}")
 
     return aes.to('cpu')
 
@@ -85,6 +85,6 @@ if __name__ == "__main__":
         ])
     else:
         ae_model = StackedAE.from_dict(torch.load(checkpoint, weights_only=True))
-    ae_model = train_model(dataloader, ae_model, epoches=15, lr=1e-3)
+    ae_model = train_model(dataloader, ae_model, epochs=15, lr=1e-3)
     torch.save(ae_model.to_dict(), save_folder + "ae_4_fix.pth")
 

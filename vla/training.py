@@ -28,7 +28,7 @@ def train_ae_straight(ae, dataloader, iterations=30, lr=1e-4, show_frame_fn=None
     return ae.to('cpu')
 
 
-def train_aes_top(aes, dataloader, decoder_only=True, epoches=20, zsteps=25, lr=1e-4, show_frame_fn=None):
+def train_aes_top(aes, dataloader, decoder_only=True, epochs=20, zsteps=25, lr=1e-4, show_frame_fn=None):
     '''
     Train top layer of stacked autoencoder either with z optimization (decoder only)
     or as an AE block using previous block output reconstruction loss
@@ -51,7 +51,7 @@ def train_aes_top(aes, dataloader, decoder_only=True, epoches=20, zsteps=25, lr=
     loss_fn = nn.MSELoss()
     best_loss = 1e+10
 
-    for epoch in range(epoches):
+    for epoch in range(epochs):
         total_loss = 0.0
         z = None
         for i, frame0 in enumerate(tqdm(dataloader)):
@@ -80,12 +80,12 @@ def train_aes_top(aes, dataloader, decoder_only=True, epoches=20, zsteps=25, lr=
             #torch.save(ae_layer.to('cpu').to_dict(), "ae_layer.pth")
             #ae_layer.to('cuda')
 
-        print(f"[Epoch {epoch + 1}/{epoches}] Loss: {total_loss / len(dataloader):.6f}")
+        print(f"[Epoch {epoch + 1}/{epochs}] Loss: {total_loss / len(dataloader):.6f}")
 
     aes.aes.append(ae_layer)
     return aes.to('cpu')
 
-def train_aes_allz(aes, dataloader, epoches=10, zsteps=20, lr=1e-4, lr_z=3e+3, show_frame_fn=None):
+def train_aes_allz(aes, dataloader, epochs=10, zsteps=20, lr=1e-4, lr_z=3e+3, show_frame_fn=None):
     '''
     Train stacked autoencoders with optimization of z's at all layers.
     '''
@@ -99,7 +99,7 @@ def train_aes_allz(aes, dataloader, epoches=10, zsteps=20, lr=1e-4, lr_z=3e+3, s
     encoder_optimizers = [torch.optim.Adam(ae.get_encoder_params(), lr=lr) for ae in aes.aes]
     loss_fn = nn.MSELoss()
 
-    for epoch in range(epoches):
+    for epoch in range(epochs):
         total_loss = [0.0]*cnt
         total_eloss = 0.0
 
@@ -139,7 +139,7 @@ def train_aes_allz(aes, dataloader, epoches=10, zsteps=20, lr=1e-4, lr_z=3e+3, s
         s = ""
         for tl in total_loss:
             s += f"{tl / len(dataloader):.6} "
-        print(f"[Epoch {epoch + 1}/{epoches}] Loss: ({s}) | {total_eloss/len(dataloader):.6f}")
+        print(f"[Epoch {epoch + 1}/{epochs}] Loss: ({s}) | {total_eloss/len(dataloader):.6f}")
 
     return aes.to('cpu')
 
