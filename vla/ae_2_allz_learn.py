@@ -35,5 +35,5 @@ if __name__ == "__main__":
     #     ConvAEBlockSparse(in_channels=288, num_blocks=64, channels_per_block=12)])
     #ae = StackedAE(
     #    [ConvAEBlock(3, 6), ConvAEBlock(6, 12), ConvAEBlock(12, 24), ConvAEBlock(24, 48)])
-    aes = train_aes_allz(aes, frames, epoches=4, lr=1e-4, show_frame_fn=show_frame, lr_z=3e+3) #lr_z=250)
+    aes = train_aes_allz(aes, frames, epochs=4, lr=1e-4, show_frame_fn=show_frame, lr_z=3e+3) #lr_z=250)
     torch.save(aes.to_dict(), save_folder + "ae_2_allz_stack.pth")

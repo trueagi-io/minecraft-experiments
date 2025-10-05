@@ -6,14 +6,14 @@ from utils import *
 
 from aeblock import *
 
-def train_aes_straight_T(ae, dataloader, predict=False, epoches=30, lr=1e-4, show_frame_fn=None):
+def train_aes_straight_T(ae, dataloader, predict=False, epochs=30, lr=1e-4, show_frame_fn=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     ae = ae.to(device)
 
     ae_optimizer = torch.optim.Adam(ae.parameters(), lr=lr)
     loss_fn = nn.MSELoss()
-    for epoch in range(epoches):
+    for epoch in range(epochs):
         total_loss = 0.0
         for i, frame in enumerate(tqdm(dataloader)):
             x = frame.to(device)
@@ -31,18 +31,18 @@ def train_aes_straight_T(ae, dataloader, predict=False, epoches=30, lr=1e-4, sho
             total_loss += loss.item()
             if show_frame_fn is not None and i == len(dataloader) - 1:# and epoch % 10 == 0:
                 show_frame_fn(frame[0], xr[0])
-        print(f"[Epoch {epoch + 1}/{epoches}] Loss: {total_loss/len(dataloader):.6f}")
+        print(f"[Epoch {epoch + 1}/{epochs}] Loss: {total_loss/len(dataloader):.6f}")
     return ae.to('cpu')
 
 
-def train_aes_top_T(ae, dataloader, predict=False, epoches=30, lr=1e-4, show_frame_fn=None):
+def train_aes_top_T(ae, dataloader, predict=False, epochs=30, lr=1e-4, show_frame_fn=None):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     ae = ae.to(device)
 
     ae_optimizer = torch.optim.Adam(ae.aes[-1].parameters(), lr=lr)
     loss_fn = nn.MSELoss()
-    for epoch in range(epoches):
+    for epoch in range(epochs):
         total_loss = 0.0
         for i, frame in enumerate(tqdm(dataloader)):
             x = frame.to(device)
@@ -61,7 +61,7 @@ def train_aes_top_T(ae, dataloader, predict=False, epoches=30, lr=1e-4, show_fra
             total_loss += loss.item()
             if show_frame_fn is not None and i == len(dataloader) - 1:# and epoch % 10 == 0:
                 show_frame_fn(frame[0], ae.decode_straight(z)[-1][0])
-        print(f"[Epoch {epoch + 1}/{epoches}] Loss: {total_loss/len(dataloader):.6f}")
+        print(f"[Epoch {epoch + 1}/{epochs}] Loss: {total_loss/len(dataloader):.6f}")
     return ae.to('cpu')
 
 
@@ -137,14 +137,16 @@ if __name__ == "__main__":
                                   kernel_size=(4,6,6), stride=(1,2,2), padding=(0,2,2))
             ae_model.aes.append(layer)
     # train_aes_top_T
-    aes = train_aes_straight_T(ae_model, dataloader, predict=predict, lr=1e-5, epoches=10,
-        show_frame_fn=lambda _, fake: show_predict_frame(fake, 3*len(ae_model.aes)+1))
+    nlost = 3*len(ae_model.aes)
+    aes = train_aes_straight_T(ae_model, dataloader, predict=predict, lr=2e-5, epochs=10,
+        show_frame_fn=lambda _, fake: show_predict_frame(fake, nlost+1))
     torch.save(aes.to_dict(), save_folder + "ae_3tp_3d.pth")
 
     import cv2
     for i, clip in enumerate(dataloader):
-        out = cv2.VideoWriter(f"out{i}.mp4", cv2.VideoWriter_fourcc(*'XVID'), 6, (320, 240))
+        out = cv2.VideoWriter(f"result/out{i}.mp4", cv2.VideoWriter_fourcc(*'XVID'), 6, (320, 240))
         with torch.no_grad():
+            #clip = clip[:,:,-nlost*2:,:,:]
             for n in range(12):
                 im = clip[0].permute(1, 2, 3, 0)[-12+n].cpu().numpy()
                 out.write(cv2.cvtColor((im*255).astype(np.uint8), cv2.COLOR_RGB2BGR))
