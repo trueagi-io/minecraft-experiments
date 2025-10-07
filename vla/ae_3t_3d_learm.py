@@ -142,28 +142,29 @@ if __name__ == "__main__":
         show_frame_fn=lambda _, fake: show_predict_frame(fake, nlost+1))
     torch.save(aes.to_dict(), save_folder + "ae_3tp_3d.pth")
 
-    import cv2
-    for i, clip in enumerate(dataloader):
-        out = cv2.VideoWriter(f"result/out{i}.mp4", cv2.VideoWriter_fourcc(*'XVID'), 6, (320, 240))
-        with torch.no_grad():
-            #clip = clip[:,:,-nlost*2:,:,:]
-            for n in range(12):
-                im = clip[0].permute(1, 2, 3, 0)[-12+n].cpu().numpy()
-                out.write(cv2.cvtColor((im*255).astype(np.uint8), cv2.COLOR_RGB2BGR))
-                plt.imshow(im)
-                plt.show(block=False)
-                plt.pause(0.2)
-            for n in range(9):
-                z = ae_model.encode_straight(clip)[-1]
-                xr = ae_model.decode_straight(z)[-1]
-                dt = xr.size(2)-z.size(2)
-                im = xr[0].permute(1, 2, 3, 0)[-dt-1].cpu().numpy()
-                out.write(cv2.cvtColor((im*255).astype(np.uint8), cv2.COLOR_RGB2BGR))
-                plt.imshow(im)
-                plt.show(block=False)
-                plt.pause(0.2)
-                clip = clip[:,:,1:,:,:]
-                clip = torch.cat([clip, xr[:,:,-dt-1:-dt,:,:]], dim=2)
-        out.release()
-        if i >= 9:
-            break
+    if predict:
+        import cv2
+        for i, clip in enumerate(dataloader):
+            out = cv2.VideoWriter(f"result/out{i}.mp4", cv2.VideoWriter_fourcc(*'XVID'), 6, (320, 240))
+            with torch.no_grad():
+                #clip = clip[:,:,-nlost*2:,:,:]
+                for n in range(12):
+                    im = clip[0].permute(1, 2, 3, 0)[-12+n].cpu().numpy()
+                    out.write(cv2.cvtColor((im*255).astype(np.uint8), cv2.COLOR_RGB2BGR))
+                    plt.imshow(im)
+                    plt.show(block=False)
+                    plt.pause(0.2)
+                for n in range(9):
+                    z = ae_model.encode_straight(clip)[-1]
+                    xr = ae_model.decode_straight(z)[-1]
+                    dt = xr.size(2)-z.size(2)
+                    im = xr[0].permute(1, 2, 3, 0)[-dt-1].cpu().numpy()
+                    out.write(cv2.cvtColor((im*255).astype(np.uint8), cv2.COLOR_RGB2BGR))
+                    plt.imshow(im)
+                    plt.show(block=False)
+                    plt.pause(0.2)
+                    clip = clip[:,:,1:,:,:]
+                    clip = torch.cat([clip, xr[:,:,-dt-1:-dt,:,:]], dim=2)
+            out.release()
+            if i >= 9:
+                break

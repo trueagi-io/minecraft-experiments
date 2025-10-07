@@ -27,6 +27,7 @@
    - Loss: (0.000256445 0.000185261 8.95173e-05 1.98128e-05) | Encoders: 0.000319
 
 * ae_3_3d_learn.py (not too successful)
+   - Non-causal 3D convolution
    - Layer-by-layer training of stacked 3D autoencoders
    - 4x features for 2x compression over H/W/T (2x compression overall)
      One layer reconstruction loss (L-0): 0.0010 (AE) is not too promising
@@ -49,13 +50,14 @@
    - 2x features for 2x H/W compression without T compression
      One layer reconstruction loss (L-0): 0.00071 (AE), which
      better than non-causal 3D AE, but still worse than 2D AE.
+   - 4 layers straight reconstruction loss: 0.0023
    - May still be undertrained.
    - ------------------
    - Causal AE can be used for prediction. To do this, one just needs to
      pass shifted input to reconstruction loss
    - 4x features for 2x H/W (no compression), because it's reconstruction
    - One layer prediction loss (L-0): 0.0081
-   - 4 layers straight prediction loss: 0.0023
+   - 4 layers straight prediction loss: 0.0023 (too close to reconstruction?)
    - The issue with predictive 3D AE is that they predict latent codes of
      each next frame not using information from it. This helps to extract
      useful features. But they don't construct descriptions of image frames
@@ -78,7 +80,7 @@
     - Factorized spatial/temporal transformer predictor on top of AE features.
     - 3 spatial + 4 temporal attention layers are tested.
     - Prediction loss of dense layer-4 AE features - 0.0020
-    - Prediction loss of sparse layer-4 AE features - 0.00031
+    - Prediction loss of sparse layer-4 AE features - 0.00031 (0.00026 in another run)
       (losses on sparse and dense latents cannot be compared, however, reconstruction
       from prediction of dense latents looks just like blurring, while in the case
       of sparse latents motion is in general predicted)
@@ -88,6 +90,8 @@
       static camera. The latter can reproduce, what was outside the current frame
       several frames ago, but its results degrade due to increasing artefacts
       even for a static camera.
+    - 3D AE features could be helpful for better prediction, but it didn't
+      happen in experiments
 
   * vt_0e_learn.py (kinda negative despite reasonable loss)
       - end-to-end Transformer+AE fine-tuning on pixel-level next frame prediction.
