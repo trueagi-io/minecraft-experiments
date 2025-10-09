@@ -94,7 +94,7 @@
       happen in experiments
 
   * vt_0e_learn.py (kinda negative despite reasonable loss)
-      - end-to-end Transformer+AE fine-tuning on pixel-level next frame prediction.
+      - End-to-end Transformer+AE fine-tuning on pixel-level next frame prediction.
       - Pixel-level prediction loss - 0.00228 - very close to causal convolution.
       - Quality is worse than for latent code prediction by Transformer, because
         Transformer still produces the predicted latent code, which is worsened
@@ -104,3 +104,42 @@
         predicts the latent code, which is good for decoder, but this is not the same
         latent code, which is constructed by encoder.
       - This end-to-end fine-tuning doesn't seem like a good idea in such settings.
+
+
+  * vta_0_learn.py
+      - The same FactorizedVideoTransformer on top of the same autoencoders.
+      - Actions and two additional observations are added to visual features
+        (duplicated for each 15x20 point without careful normalization).
+      - Jump are rare actions, and are badly predicted, because it is easier to
+        always predict them as ~0, while errors in predicting 1's don't have
+        impact on loss. Loss should be improved.
+      - Both training of next frame prediction together with action prediction
+        and fine-tuning only for action prediction are available.
+      - === Dense Autoencoders ===
+      - Faster training, more compact transformer
+      - Overall loss: 0.00150, which is smaller than video prediction loss
+        (possibly, actions help to predict video a little better?)
+      - Action prediction loss after fine-tuning: 0.0020
+        (overall loss is not reduced because of action features)
+      - From the first training attempt, the agent manages to achieve the goal
+        (cutting wood) in non-complicated cases with and without fine-tuning
+        on actions only. Orientation towards trees is far from perfect, and
+        cutting leaves is excessive, birches are ignored (in contrast to oaks),
+        but the behavior is quite stable.
+      - === Sparse Autoencoders ===
+      - Completely independent results on different features.
+      - Overall loss: 0.00034, which is worse than video prediction loss
+        (most likely because sparse image features have smaller loss than
+        action features).
+      - While sparse features outperformed dense features on video prediction,
+        the behavior of the model trained on video+action prediction is
+        similar to the case of dense features with some pros and cons
+        (visually it seems less stable and less precise, but more complex).
+      - Fine-tuning on action prediction greatly decreases the loss. First,
+        it narrows down to steady leaves cutting, but with further fine-tuning
+        loss falls down to 0.00036, and the agent begins to cut wood (both
+        oak and birch, although preferring oak and leaves). Although the
+        action prediction loss is much smaller than in the case of dense
+        features, the behavior is only marginally better (besides birches).
+        However, the model looks more promising for learning a wider spectrum
+        of behavior.
