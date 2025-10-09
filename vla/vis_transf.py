@@ -114,13 +114,13 @@ def evaluate(model, dataloader, loss_fn, device):
 
     return total_loss / len(dataloader)
 
-def train_model(model, train_dataset, val_dataset, epochs=10, batch_size=8, lr=1e-4, device='cuda'):
+def train_model(model, train_dataset, val_dataset,
+                epochs=10, batch_size=8, lr=1e-4, device='cuda', loss_fn=nn.MSELoss()):
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size)
 
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    loss_fn = nn.MSELoss()
 
     for epoch in range(1, epochs + 1):
         train_loss = train_epoch(model, train_loader, optimizer, loss_fn, device)
