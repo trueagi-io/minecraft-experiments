@@ -143,3 +143,39 @@
         features, the behavior is only marginally better (besides birches).
         However, the model looks more promising for learning a wider spectrum
         of behavior.
+
+  * vta_0g_learn.py
+      - The same, but one-hot features for 5 goals are added of the handcrafted agent
+        (NeuralSearch, ApproachPos, LookAt, AttackBlockTool, PickNear)
+      - The model is first trained to predict vision features, actions, and goals.
+      - Then, it is fine-tuned to predict actions and goals.
+      - === Dense Autoencoders ===
+      - Overall loss: 0.00148, which is nearly the same as without goals.
+      - The model trained for predicting all data poorly manages to switch between
+        goals (it happens sometimes, but sometimes it doesn't switch goals at all)
+      - The model behavior with constant goal conditioning (Search) corresponds
+        to the search strategy without much attempts to mine blocks - it navigates
+        towards trees, but mostly ignores them and doesn't prefer over other blocks
+      - The model can be conditioned on goals determined externally (a simplistic
+        strategy for 3 of 5 goals was tries), or the model can successfully do
+        self-conditioning in some cases. And it is obvious that conditioning does
+        change the model behavior. That is, it is learned successfully.
+      - Fine-tuning the model on predicting actions and goals only gives 0.0015 loss
+        which looks good.
+      - The model learns to change its goals, although it seems to overfit, e.g.
+        it may start to predict PickNear, when it is just among trees. Apparently,
+        it doesn't learn to pose this goal, when it sees a pickable block.
+        An under-fine-tuned model (with loss ~0.002) has a more robust behavior.
+      - In general, conditioning definitely works. The behavior is quite different
+        depending on the input goal. Behavior becomes more diverse, more
+        structured, more purposeful, but only when correctly conditioned.
+      - With self-conditioning and simplified goals, the model is not obviously
+        more successful than without goal conditioning, but looks promising.
+      - === Sparse Autoencoders ===
+      - Overall loss: 0.00037
+      - Without fine-tuning on action-goal loss, agent rarely switches between
+        tasks and works similar to the same agent on dense features
+      - Action-goal only loss after fine-tuning: 0.00007
+      - The behavior of the fine-tuned agent is much worse than in other cases.
+        Possibly, it overlearns (loss is too low), and this is finally the case,
+        when more data is needed.
