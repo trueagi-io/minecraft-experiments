@@ -37,18 +37,61 @@ TRANSFORM = transforms.Compose(
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# LABEL_TYPE = "class"      # classification
+# LABEL_TYPE = "distance"   # regression
 
 class SimpleClassifier(nn.Module):
-    def __init__(self, num_classes, num_features):
+    def __init__(
+        self,
+        num_features,
+        output_size,
+        hidden_size=512,
+        num_hidden_layers=1,
+        output_activation="softmax"
+    ):
+        """
+        num_features      — input feature size
+        output_size       — number of classes OR 1 (regression)
+        hidden_size       — size of each hidden layer
+        num_hidden_layers — 0, 1, 2, ...
+        output_activation — "softmax", "sigmoid", "none" (only these 3 options)
+        """
         super().__init__()
-        self.fc1 = nn.Linear(num_features, HIDDEN_LAYER_SIZE)
-        self.fc2 = nn.Linear(HIDDEN_LAYER_SIZE, num_classes)
+
+        layers = []
+
+        if num_hidden_layers == 0:
+            # direct linear mapping
+            layers.append(nn.Linear(num_features, output_size))
+        else:
+            # first layer
+            layers.append(nn.Linear(num_features, hidden_size))
+            layers.append(nn.ReLU())
+
+            # intermediate hidden layers
+            for _ in range(num_hidden_layers - 1):
+                layers.append(nn.Linear(hidden_size, hidden_size))
+                layers.append(nn.ReLU())
+
+            # output layer
+            layers.append(nn.Linear(hidden_size, output_size))
+
+        self.model = nn.Sequential(*layers)
+        self.output_activation = output_activation
 
     def forward(self, x):
         x = torch.flatten(x, 1)
-        x = F.relu(self.fc1(x))
-        x = F.softmax(self.fc2(x))
-        return x
+        x = self.model(x)
+
+        # activation logic
+        if self.output_activation == "softmax":
+            return F.softmax(x, dim=1)
+        elif self.output_activation == "sigmoid":
+            return torch.sigmoid(x)
+        elif self.output_activation == "none":
+            return x
+        else:
+            raise ValueError(f"Unknown output activation: {self.output_activation}")
 
 
 # process raw data and create train and test json files.
@@ -72,17 +115,17 @@ def make_dataset(directory_path):
             if not block_type_LOS in block_types:
                 block_types[block_type_LOS] = {}
                 block_types[block_type_LOS]["count"] = 1
-                block_types[block_type_LOS]["pathes"] = []
-                block_types[block_type_LOS]["pathes"].append(file_name)
+                block_types[block_type_LOS]["paths"] = []
+                block_types[block_type_LOS]["paths"].append(file_name)
             else:
                 block_types[block_type_LOS]["count"] += 1
-                block_types[block_type_LOS]["pathes"].append(file_name)
+                block_types[block_type_LOS]["paths"].append(file_name)
     for key in block_types:
         if block_types[key]["count"] < DATASET_THRESHOLD:
             continue
-        random.shuffle(block_types[key]["pathes"])
-        train_set[key] = block_types[key]["pathes"][:TRAIN_NUMBER]
-        test_set[key] = block_types[key]["pathes"][TRAIN_NUMBER:TRAIN_NUMBER+TEST_NUMBER]
+        random.shuffle(block_types[key]["paths"])
+        train_set[key] = block_types[key]["paths"][:TRAIN_NUMBER]
+        test_set[key] = block_types[key]["paths"][TRAIN_NUMBER:TRAIN_NUMBER+TEST_NUMBER]
 
     json.dump(train_set, open("train_dataset.json",'w'))
     json.dump(test_set, open("test_dataset.json", 'w'))
