@@ -73,7 +73,7 @@ def repeatable_code(data, model, classifier):
     labels, images = data
     input_features = model.encode(images.to(device))
     outputs = classifier(input_features)
-    return outputs, labels
+    return outputs, labels.to(device)
 
 # compute test loss while training
 def test_classifier(model, classifier, test_loader, epoch, best_loss):
@@ -132,9 +132,10 @@ def compute_score_classifier(model, classifier, test_loader):
 
 def compute_score_regression(model, classifier, test_loader):
     sum_mse = 0
+    mse_loss = nn.MSELoss()
     for i, data in enumerate(test_loader, 0):
         outputs, labels = repeatable_code(data, model, classifier)
-        sum_mse += nn.MSELoss(outputs, labels)
+        sum_mse += mse_loss(outputs, labels).item()
     print(f"Average MSE: {float(sum_mse) / float(len(test_loader))}")
 
 def benchmark(model, preprocessor, train_set_json_file, test_set_json_file):
