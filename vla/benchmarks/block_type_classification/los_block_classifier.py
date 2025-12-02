@@ -73,7 +73,7 @@ def repeatable_code(data, model, classifier):
     labels, images = data
     input_features = model.encode(images.to(device))
     outputs = classifier(input_features)
-    return outputs, labels.to(device)
+    return outputs, labels.to(device).float()
 
 # compute test loss while training
 def test_classifier(model, classifier, test_loader, epoch, best_loss):
@@ -102,7 +102,7 @@ def train_classifier(model, classifier, train_loader, test_loader):
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            if i % 100 == 99:
+            if i % 10 == 9:
                 print(f'[{epoch + 1}, {i + 1:5d}] train_loss: {running_loss / 100:.3f}')
                 running_loss = 0.0
                 classifier.eval()
