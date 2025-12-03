@@ -3,7 +3,7 @@ import torch
 from torch import nn
 from tqdm import tqdm
 from config import TrainConfig, LabelType
-from manager import DatasetManager
+from manager import DatasetManager, make_dataloaders
 from model import SimpleClassifier
 
 
@@ -130,14 +130,11 @@ def score(model, classifier, loader, label_type: LabelType, device):
 
 
 def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType):
-    manager = DatasetManager(
-        directory="../../../Mountain_Range",
-        label_type=label_type
-    )
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     train_loader, test_loader, score_loader, num_classes = \
-        manager.make_dataloaders(train_json, test_json, preprocessor)
+        make_dataloaders(train_json, test_json, preprocessor)
 
     feat_dim = extract_features_size(model, train_loader, device)
     classifier = SimpleClassifier(feat_dim, num_classes, TrainConfig.output_activation).to(device)

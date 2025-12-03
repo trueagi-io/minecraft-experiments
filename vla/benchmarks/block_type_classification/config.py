@@ -4,6 +4,7 @@ class LabelType(str, Enum):
     DISTANCE = "distance"
     TYPE_CLASSIFICATION = "type"
 
+PATH_TO_RAW_DATA = "../../../Mountain_Range"
 
 class TrainConfig:
     learning_rate = 1e-3
