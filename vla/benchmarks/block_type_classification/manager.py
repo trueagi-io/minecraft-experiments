@@ -39,7 +39,7 @@ def flatten_class_map(mapping):
     return flat, len(classes)
 
 
-def make_dataloaders(train_json, test_json, label_type: LabelType, transform=None, batch=32, workers=2):
+def make_dataloaders(train_json, test_json, label_type: LabelType, transform=None, feature_store=None, batch=32, workers=2):
     train_raw = load_json(train_json)
     test_raw = load_json(test_json)
 
@@ -53,8 +53,8 @@ def make_dataloaders(train_json, test_json, label_type: LabelType, transform=Non
     else:
         raise ValueError(f"Unsupported label type: {label_type}")
 
-    train_ds = LOSDataset(train_items, nc, transform)
-    test_ds = LOSDataset(test_items, nc, transform)
+    train_ds = LOSDataset(train_items, nc, transform, feature_store)
+    test_ds = LOSDataset(test_items, nc, transform, feature_store)
 
     return (
         DataLoader(train_ds, batch_size=batch, shuffle=True, num_workers=workers),

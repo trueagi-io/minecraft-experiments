@@ -2,9 +2,11 @@ import os
 import torch
 from torch import nn
 from tqdm import tqdm
-from config import TrainConfig, LabelType
+from config import TrainConfig, LabelType, FEATURE_STORE_PATH
 from manager import DatasetManager, make_dataloaders
 from model import SimpleClassifier
+from features import FeatureStore
+from precompute import precompute_features
 
 
 def extract_feature_dim(model, loader, device):
@@ -58,7 +60,11 @@ def train_classifier(
             images, labels = images.to(device), labels.to(device)
             optimizer.zero_grad()
 
-            feats = model.encode(images)
+            if train_loader.dataset.feature_store is None:
+                feats = model.encode(images)
+            else:
+                feats = images
+
             out = classifier(feats)
 
             loss = criterion(out, labels)
@@ -75,7 +81,11 @@ def train_classifier(
         with torch.no_grad():
             for labels, images in test_loader:
                 images, labels = images.to(device), labels.to(device)
-                out = classifier(model.encode(images))
+                if train_loader.dataset.feature_store is None:
+                    feats = model.encode(images)
+                else:
+                    feats = images
+                out = classifier(feats)
                 total_test += criterion(out, labels).item()
 
         avg_test = total_test / len(test_loader)
@@ -111,7 +121,11 @@ def score(model, classifier, loader, label_type: LabelType, device):
         correct = 0
         with torch.no_grad():
             for y, img in loader:
-                out = classifier(model.encode(img.to(device)))
+                if loader.dataset.feature_store is None:
+                    feats = model.encode(img.to(device))
+                else:
+                    feats = img.to(device)
+                out = classifier(feats)
                 if out.argmax() == y.argmax():
                     correct += 1
         print("Accuracy:", correct / len(loader))
@@ -121,7 +135,11 @@ def score(model, classifier, loader, label_type: LabelType, device):
         loss = nn.MSELoss()
         with torch.no_grad():
             for y, img in loader:
-                out = classifier(model.encode(img.to(device)))
+                if loader.dataset.feature_store is None:
+                    feats = model.encode(img.to(device))
+                else:
+                    feats = img.to(device)
+                out = classifier(feats)
                 mse += loss(out, y.to(device)).item()
         print("Average MSE:", mse / len(loader))
 
@@ -129,14 +147,42 @@ def score(model, classifier, loader, label_type: LabelType, device):
         raise ValueError(f"Unsupported label type {label_type}")
 
 
-def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType):
+def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType, use_precomputed_features=True):
+
+    store = FeatureStore(FEATURE_STORE_PATH)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     train_loader, test_loader, score_loader, num_classes = \
-        make_dataloaders(train_json, test_json, label_type, preprocessor, workers=0)
+        make_dataloaders(
+            train_json,
+            test_json,
+            label_type,
+            preprocessor,
+            feature_store=(store if use_precomputed_features else None),
+            workers=0
+        )
 
-    feat_dim = extract_features_size(model, train_loader, device)
+    if use_precomputed_features:
+        print("[Benchmark] Precomputing features...")
+        precompute_features(
+            model=model,
+            dataset=train_loader.dataset,
+            store=store,
+            device=device
+        )
+        precompute_features(
+            model=model,
+            dataset=test_loader.dataset,
+            store=store,
+            device=device
+        )
+
+    if use_precomputed_features:
+        feat_dim = train_loader.dataset[0][1].flatten().shape[0]
+    else:
+        feat_dim = extract_features_size(model, train_loader, device)
+
     classifier = SimpleClassifier(feat_dim, num_classes, TrainConfig.output_activation).to(device)
 
     classifier = train_classifier(model, classifier, train_loader, test_loader, device, label_type)
