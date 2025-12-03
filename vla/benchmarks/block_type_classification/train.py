@@ -134,7 +134,7 @@ def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     train_loader, test_loader, score_loader, num_classes = \
-        make_dataloaders(train_json, test_json, preprocessor)
+        make_dataloaders(train_json, test_json, LabelType.DISTANCE, preprocessor)
 
     feat_dim = extract_features_size(model, train_loader, device)
     classifier = SimpleClassifier(feat_dim, num_classes, TrainConfig.output_activation).to(device)

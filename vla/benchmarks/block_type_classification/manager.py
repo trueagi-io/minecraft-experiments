@@ -46,7 +46,7 @@ def make_dataloaders(train_json, test_json, label_type: LabelType, transform=Non
     if label_type == LabelType.TYPE_CLASSIFICATION:
         train_items, nc = flatten_class_map(train_raw)
         test_items, _ = flatten_class_map(test_raw)
-    elif label_type == LabelType.TYPE_CLASSIFICATION:
+    elif label_type == LabelType.DISTANCE:
         train_items = train_raw
         test_items = test_raw
         nc = None
