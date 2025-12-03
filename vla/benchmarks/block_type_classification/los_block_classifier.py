@@ -5,13 +5,13 @@ import torch.optim as optim
 
 import sys
 
-from Dataset import CreateDataloader
+from datasets_with_timing import CreateDataloader
 
 LEARNING_RATE = 0.001
 MOMENTUM = 0.9
 NUM_OF_EPOCHS = 10
 
-OUTPUT_ACTIVATION = "none" # "softmax", "sigmoid", "none" (only these 3 options)
+OUTPUT_ACTIVATION = "none"  # "softmax", "sigmoid", "none" (only these 3 options)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -73,7 +73,7 @@ def repeatable_code(data, model, classifier):
     labels, images = data
     input_features = model.encode(images.to(device))
     outputs = classifier(input_features)
-    return outputs, labels
+    return outputs, labels.to(device).float()
 
 # compute test loss while training
 def test_classifier(model, classifier, test_loader, epoch, best_loss):
@@ -102,7 +102,7 @@ def train_classifier(model, classifier, train_loader, test_loader):
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
-            if i % 100 == 99:
+            if i % 10 == 9:
                 print(f'[{epoch + 1}, {i + 1:5d}] train_loss: {running_loss / 100:.3f}')
                 running_loss = 0.0
                 classifier.eval()
@@ -132,13 +132,14 @@ def compute_score_classifier(model, classifier, test_loader):
 
 def compute_score_regression(model, classifier, test_loader):
     sum_mse = 0
+    mse_loss = nn.MSELoss()
     for i, data in enumerate(test_loader, 0):
         outputs, labels = repeatable_code(data, model, classifier)
-        sum_mse += nn.MSELoss(outputs, labels)
+        sum_mse += mse_loss(outputs, labels).item()
     print(f"Average MSE: {float(sum_mse) / float(len(test_loader))}")
 
-def benchmark(model, preprocessor, train_set_json_file, test_set_json_file):
-    train_loader, test_loader, test_loader_score, num_classes, label_type = CreateDataloader(train_set_json_file, test_set_json_file, preprocessor)
+def benchmark(model, preprocessor, train_set_json_file, test_set_json_file, label_type):
+    train_loader, test_loader, test_loader_score, num_classes, _ = CreateDataloader(train_set_json_file, test_set_json_file, preprocessor, label_type=label_type)
     classifier = SimpleClassifier(extract_features_size(model, train_loader), num_classes).to(device)
     train_classifier(model, classifier, train_loader, test_loader)
     if label_type == "type":
