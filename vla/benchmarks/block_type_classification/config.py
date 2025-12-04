@@ -6,9 +6,9 @@ class LabelType(str, Enum):
     TYPE_CLASSIFICATION = "type"
 
 
-PATH_TO_RAW_DATA = "../../../Mountain_Range"
+PATH_TO_RAW_DATA = "/path/to/folder"
 
-FEATURE_STORE_PATH = "./precomputed_features"
+FEATURE_STORE_PATH = "/path/to/folder"
 
 
 class TrainConfig:
