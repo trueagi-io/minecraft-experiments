@@ -6,20 +6,24 @@ from config import LabelType
 
 
 class DatasetManager:
-    def __init__(self, directory, label_type: LabelType, dataset_size=200, train_split=0.25, num_bins=50):
+    def __init__(self, directory, label_type: LabelType, dataset_size=200, train_split=0.25, num_bins=50, random_seed=None):
+        self.random_seed = random_seed
         self.label_type = label_type
 
         if label_type == LabelType.DISTANCE:
             self.builder = DistanceDatasetBuilder(directory, dataset_size=dataset_size,
-                                                  train_split=train_split, num_bins=num_bins)
+                                                  train_split=train_split, num_bins=num_bins, random_seed=self.random_seed)
         elif label_type == LabelType.TYPE_CLASSIFICATION:
             self.builder = TypeDatasetBuilder(directory, dataset_size=dataset_size,
-                                              train_split=train_split)
+                                              train_split=train_split, random_seed=self.random_seed)
         else:
             raise ValueError(f"Unsupported label type: {label_type}")
 
     def create(self, name):
-        train_file, test_file = self.builder.build(name)
+        if self.random_seed is not None:
+            _, _, train_set, test_set = self.builder.build(name)
+            return train_set, test_set
+        train_file, test_file, [], [] = self.builder.build(name)
         print(f"Train set: {train_file}")
         print(f"Test  set: {test_file}")
         return train_file, test_file
@@ -39,9 +43,13 @@ def flatten_class_map(mapping):
     return flat, len(classes)
 
 
-def make_dataloaders(train_json, test_json, label_type: LabelType, transform=None, feature_store=None, batch=32, workers=2):
-    train_raw = load_json(train_json)
-    test_raw = load_json(test_json)
+def make_dataloaders(train_json, test_json, label_type: LabelType, transform=None, feature_store=None, batch=32, workers=2, dataset_manager=None):
+
+    if dataset_manager is not None:
+        train_raw, test_raw = dataset_manager.create("")
+    else:
+        train_raw = load_json(train_json)
+        test_raw = load_json(test_json)
 
     if label_type == LabelType.TYPE_CLASSIFICATION:
         train_items, nc = flatten_class_map(train_raw)

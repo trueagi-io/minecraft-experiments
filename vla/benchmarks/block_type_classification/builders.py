@@ -24,10 +24,13 @@ def safe_load_json(path: str) -> Optional[dict]:
 
 
 class DatasetBuilder(ABC):
-    def __init__(self, directory: str, dataset_size: int = 200, train_split: float = 0.25):
+    def __init__(self, directory: str, dataset_size: int = 200, train_split: float = 0.25, random_seed=None):
         self.directory = directory
         self.dataset_size = dataset_size
         self.train_split = train_split
+        self.random_seed = random_seed
+        if self.random_seed is not None:
+            random.seed(self.random_seed)
 
     def extract_samples(self) -> List[Tuple[dict, str]]:
         """Gather (lineOfSight_metadata, image_stem_path)."""
@@ -51,7 +54,7 @@ class DatasetBuilder(ABC):
         return samples
 
     @abstractmethod
-    def build(self, json_name: str) -> Tuple[str, str]:
+    def build(self, json_name: str) -> Tuple[str, str, list, list]:
         """
         Must return:
             (train_json_path, test_json_path)
@@ -67,7 +70,7 @@ class DistanceDatasetBuilder(DatasetBuilder):
         super().__init__(directory, **kwargs)
         self.num_bins = num_bins
 
-    def build(self, json_name: str) -> Tuple[str, str]:
+    def build(self, json_name: str) -> Tuple[str, str, list, list]:
         samples = self.extract_samples()
         if not samples:
             raise Exception("No valid samples for distance dataset.")
@@ -104,20 +107,24 @@ class DistanceDatasetBuilder(DatasetBuilder):
             train_set.extend(bucket[:train_sz])
             test_set.extend(bucket[train_sz: train_sz + test_sz])
 
+        if self.random_seed is not None:
+            return "", "", train_set, test_set
+
         train_file = f"train_{json_name}.json"
         test_file = f"test_{json_name}.json"
 
         json.dump(train_set, open(train_file, "w"))
         json.dump(test_set, open(test_file, "w"))
 
-        return train_file, test_file
+        return train_file, test_file, [], []
 
 
 # Type Dataset Builder
 
 
 class TypeDatasetBuilder(DatasetBuilder):
-    def build(self, json_name: str) -> Tuple[str, str]:
+
+    def build(self, json_name: str) -> Tuple[str, str, list, list]:
         samples = self.extract_samples()
         if not samples:
             raise Exception("No valid samples for type dataset.")
@@ -140,10 +147,13 @@ class TypeDatasetBuilder(DatasetBuilder):
             train_out[label] = paths[:train_sz]
             test_out[label] = paths[train_sz:per_class]
 
+        if self.random_seed is not None:
+            return "", "", train_out, test_out
+
         train_file = f"train_{json_name}.json"
         test_file = f"test_{json_name}.json"
 
         json.dump(train_out, open(train_file, "w"))
         json.dump(test_out, open(test_file, "w"))
 
-        return train_file, test_file
+        return train_file, test_file, [], []

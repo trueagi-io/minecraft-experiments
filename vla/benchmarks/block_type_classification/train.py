@@ -2,7 +2,7 @@ import os
 import torch
 from torch import nn
 from tqdm import tqdm
-from config import TrainConfig, LabelType, FEATURE_STORE_PATH
+from config import TrainConfig, LabelType, FEATURE_STORE_PATH, PATH_TO_RAW_DATA
 from manager import DatasetManager, make_dataloaders
 from model import SimpleClassifier
 from features import FeatureStore
@@ -147,7 +147,11 @@ def score(model, classifier, loader, label_type: LabelType, device):
         raise ValueError(f"Unsupported label type {label_type}")
 
 
-def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType, use_precomputed_features=True):
+def benchmark(model, preprocessor, train_json, test_json, label_type=LabelType.DISTANCE, use_precomputed_features=True, random_seed=None):
+
+    dataset_manager = None
+    if random_seed is not None:
+        dataset_manager = DatasetManager(PATH_TO_RAW_DATA, label_type, random_seed=random_seed)
 
     store = FeatureStore(FEATURE_STORE_PATH)
 
@@ -160,7 +164,8 @@ def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType,
             label_type,
             preprocessor,
             feature_store=(store if use_precomputed_features else None),
-            workers=0
+            workers=0,
+            dataset_manager=dataset_manager
         )
 
     if use_precomputed_features:
@@ -187,4 +192,3 @@ def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType,
 
     classifier = train_classifier(model, classifier, train_loader, test_loader, device, label_type)
     score(model, classifier, score_loader, label_type, device)
-
