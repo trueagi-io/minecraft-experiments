@@ -11,6 +11,4 @@ if __name__ == "__main__":
         num_bins=50
     )
 
-    train_file, test_file, t = manager.create("los_dataset")
-
-    print("Generation time:", t)
+    train_file, test_file = manager.create("los_dataset")
