@@ -24,11 +24,12 @@ def safe_load_json(path: str) -> Optional[dict]:
 
 
 class DatasetBuilder(ABC):
-    def __init__(self, directory: str, dataset_size: int = 200, train_split: float = 0.25, random_seed=None):
+    def __init__(self, directory: str, dataset_size: int = 200, train_split: float = 0.25, random_seed=None, full_folder=False):
         self.directory = directory
         self.dataset_size = dataset_size
         self.train_split = train_split
         self.random_seed = random_seed
+        self.full_folder = full_folder
         if self.random_seed is not None:
             random.seed(self.random_seed)
 
@@ -84,8 +85,12 @@ class DistanceDatasetBuilder(DatasetBuilder):
         usable_count = hist_counts[mid]
         usable_per_bin = min(self.dataset_size, usable_count)
 
-        train_sz = int(self.train_split * usable_per_bin)
-        test_sz = usable_per_bin - train_sz
+        if self.full_folder:
+            train_sz = None
+            test_sz = 0
+        else:
+            train_sz = int(self.train_split * usable_per_bin)
+            test_sz = usable_per_bin
 
         # Bucket samples
         buckets = {i: [] for i in range(mid)}
@@ -105,7 +110,7 @@ class DistanceDatasetBuilder(DatasetBuilder):
                 continue
             random.shuffle(bucket)
             train_set.extend(bucket[:train_sz])
-            test_set.extend(bucket[train_sz: train_sz + test_sz])
+            test_set.extend(bucket[train_sz:test_sz])
 
         if self.random_seed is not None:
             return "", "", train_set, test_set
@@ -135,8 +140,12 @@ class TypeDatasetBuilder(DatasetBuilder):
             label = los["type"]
             type_map.setdefault(label, []).append(path)
 
-        per_class = self.dataset_size
-        train_sz = int(self.train_split * per_class)
+        if self.full_folder:
+            train_sz = None
+            per_class = 0
+        else:
+            per_class = self.dataset_size
+            train_sz = int(self.train_split * per_class)
 
         train_out, test_out = {}, {}
 

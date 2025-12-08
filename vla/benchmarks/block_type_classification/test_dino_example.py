@@ -7,7 +7,7 @@ if __name__ == "__main__":
     benchmark(
         Dinov2Features_crop_image(),
         preprocessor,
-        'train_los_dataset.json',
-        'test_los_dataset.json',
-        label_type=LabelType.DISTANCE
+        label_type=LabelType.DISTANCE,
+        random_seed=10,
+        generalization_set_folder="./2025_LOS/Night_clear/Mountain_Range"
     )
