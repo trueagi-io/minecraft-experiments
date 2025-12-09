@@ -9,5 +9,6 @@ if __name__ == "__main__":
         preprocessor,
         label_type=LabelType.DISTANCE,
         random_seed=10,
-        generalization_set_folder="./2025_LOS/Night_clear/Mountain_Range"
+        generalization_set_folder="./2025_LOS/Night_clear/Mountain_Range",
+        config_path="example_config.json"
     )

@@ -1,8 +1,9 @@
 import os
+import json
 import torch
 from torch import nn
 from tqdm import tqdm
-from config import TrainConfig, LabelType, FEATURE_STORE_PATH, PATH_TO_RAW_DATA
+from config import TrainConfig, LabelType, ConfigPaths, construct_configs
 from manager import DatasetManager, make_dataloaders
 from model import SimpleClassifier
 from features import FeatureStore
@@ -147,18 +148,24 @@ def score(model, classifier, loader, label_type: LabelType, device):
         raise ValueError(f"Unsupported label type {label_type}")
 
 
-def benchmark(model, preprocessor, train_json="train_los_dataset.json", test_json="test_los_dataset.json", label_type=LabelType.DISTANCE, use_precomputed_features=True, random_seed=None, generalization_set_folder=""):
+def benchmark(model, preprocessor, train_json="train_los_dataset.json", test_json="test_los_dataset.json",
+              label_type=LabelType.DISTANCE, use_precomputed_features=True, random_seed=None,
+              generalization_set_folder="", config_path="example_config.json"):
+
+    with open(config_path, 'r') as file:
+        config_dict = json.load(file)
+        construct_configs(**config_dict)
 
     dataset_manager = None
     if random_seed is not None:
-        dataset_manager = DatasetManager(PATH_TO_RAW_DATA, label_type, random_seed=random_seed)
+        dataset_manager = DatasetManager(ConfigPaths.path_to_raw_data, label_type, random_seed=random_seed)
 
     generalization_dataset_manager = None
     if generalization_set_folder != "":
         generalization_dataset_manager = DatasetManager(generalization_set_folder, label_type, random_seed=random_seed,
                                                         full_folder=True)
 
-    store = FeatureStore(FEATURE_STORE_PATH)
+    store = FeatureStore(ConfigPaths.feature_store_path)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
