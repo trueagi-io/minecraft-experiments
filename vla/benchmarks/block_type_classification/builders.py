@@ -90,9 +90,9 @@ class DistanceDatasetBuilder(DatasetBuilder):
             for los, path in samples:
                 gen_set.append((los["distance"], path))
             return "", "", gen_set, []
-        else:
-            train_sz = int(self.train_split * usable_per_bin)
-            test_sz = usable_per_bin
+        
+        train_sz = int(self.train_split * usable_per_bin)
+        test_sz = usable_per_bin
 
         # Bucket samples
         buckets = {i: [] for i in range(mid)}
