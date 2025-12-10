@@ -24,10 +24,14 @@ def safe_load_json(path: str) -> Optional[dict]:
 
 
 class DatasetBuilder(ABC):
-    def __init__(self, directory: str, dataset_size: int = 200, train_split: float = 0.25):
+    def __init__(self, directory: str, dataset_size: int = 200, train_split: float = 0.25, random_seed=None, full_folder=False):
         self.directory = directory
         self.dataset_size = dataset_size
         self.train_split = train_split
+        self.random_seed = random_seed
+        self.full_folder = full_folder
+        if self.random_seed is not None:
+            random.seed(self.random_seed)
 
     def extract_samples(self) -> List[Tuple[dict, str]]:
         """Gather (lineOfSight_metadata, image_stem_path)."""
@@ -51,7 +55,7 @@ class DatasetBuilder(ABC):
         return samples
 
     @abstractmethod
-    def build(self, json_name: str) -> Tuple[str, str]:
+    def build(self, json_name: str) -> Tuple[str, str, list, list]:
         """
         Must return:
             (train_json_path, test_json_path)
@@ -67,7 +71,7 @@ class DistanceDatasetBuilder(DatasetBuilder):
         super().__init__(directory, **kwargs)
         self.num_bins = num_bins
 
-    def build(self, json_name: str) -> Tuple[str, str]:
+    def build(self, json_name: str) -> Tuple[str, str, list, list]:
         samples = self.extract_samples()
         if not samples:
             raise Exception("No valid samples for distance dataset.")
@@ -81,8 +85,14 @@ class DistanceDatasetBuilder(DatasetBuilder):
         usable_count = hist_counts[mid]
         usable_per_bin = min(self.dataset_size, usable_count)
 
+        if self.full_folder:
+            gen_set = []
+            for los, path in samples:
+                gen_set.append((los["distance"], path))
+            return "", "", gen_set, []
+        
         train_sz = int(self.train_split * usable_per_bin)
-        test_sz = usable_per_bin - train_sz
+        test_sz = usable_per_bin
 
         # Bucket samples
         buckets = {i: [] for i in range(mid)}
@@ -102,7 +112,10 @@ class DistanceDatasetBuilder(DatasetBuilder):
                 continue
             random.shuffle(bucket)
             train_set.extend(bucket[:train_sz])
-            test_set.extend(bucket[train_sz: train_sz + test_sz])
+            test_set.extend(bucket[train_sz:test_sz])
+
+        if self.random_seed is not None:
+            return "", "", train_set, test_set
 
         train_file = f"train_{json_name}.json"
         test_file = f"test_{json_name}.json"
@@ -110,14 +123,15 @@ class DistanceDatasetBuilder(DatasetBuilder):
         json.dump(train_set, open(train_file, "w"))
         json.dump(test_set, open(test_file, "w"))
 
-        return train_file, test_file
+        return train_file, test_file, [], []
 
 
 # Type Dataset Builder
 
 
 class TypeDatasetBuilder(DatasetBuilder):
-    def build(self, json_name: str) -> Tuple[str, str]:
+
+    def build(self, json_name: str) -> Tuple[str, str, list, list]:
         samples = self.extract_samples()
         if not samples:
             raise Exception("No valid samples for type dataset.")
@@ -128,8 +142,12 @@ class TypeDatasetBuilder(DatasetBuilder):
             label = los["type"]
             type_map.setdefault(label, []).append(path)
 
-        per_class = self.dataset_size
-        train_sz = int(self.train_split * per_class)
+        if self.full_folder:
+            train_sz = None
+            per_class = 0
+        else:
+            per_class = self.dataset_size
+            train_sz = int(self.train_split * per_class)
 
         train_out, test_out = {}, {}
 
@@ -140,10 +158,13 @@ class TypeDatasetBuilder(DatasetBuilder):
             train_out[label] = paths[:train_sz]
             test_out[label] = paths[train_sz:per_class]
 
+        if self.random_seed is not None:
+            return "", "", train_out, test_out
+
         train_file = f"train_{json_name}.json"
         test_file = f"test_{json_name}.json"
 
         json.dump(train_out, open(train_file, "w"))
         json.dump(test_out, open(test_file, "w"))
 
-        return train_file, test_file
+        return train_file, test_file, [], []

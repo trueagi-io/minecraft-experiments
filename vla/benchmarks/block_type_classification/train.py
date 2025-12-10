@@ -1,8 +1,9 @@
 import os
+import json
 import torch
 from torch import nn
 from tqdm import tqdm
-from config import TrainConfig, LabelType, FEATURE_STORE_PATH
+from config import TrainConfig, LabelType, ConfigPaths, construct_configs
 from manager import DatasetManager, make_dataloaders
 from model import SimpleClassifier
 from features import FeatureStore
@@ -147,20 +148,37 @@ def score(model, classifier, loader, label_type: LabelType, device):
         raise ValueError(f"Unsupported label type {label_type}")
 
 
-def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType, use_precomputed_features=True):
+def benchmark(model, preprocessor, train_json="train_los_dataset.json", test_json="test_los_dataset.json",
+              label_type=LabelType.DISTANCE, use_precomputed_features=True, random_seed=None,
+              generalization_set_folder="", config_path="example_config.json"):
 
-    store = FeatureStore(FEATURE_STORE_PATH)
+    with open(config_path, 'r') as file:
+        config_dict = json.load(file)
+        construct_configs(**config_dict)
+
+    dataset_manager = None
+    if random_seed is not None:
+        dataset_manager = DatasetManager(ConfigPaths.path_to_raw_data, label_type, random_seed=random_seed)
+
+    generalization_dataset_manager = None
+    if generalization_set_folder != "":
+        generalization_dataset_manager = DatasetManager(generalization_set_folder, label_type, random_seed=random_seed,
+                                                        full_folder=True)
+
+    store = FeatureStore(ConfigPaths.feature_store_path)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    train_loader, test_loader, score_loader, num_classes = \
+    train_loader, test_loader, score_loader, generalization_loader, num_classes = \
         make_dataloaders(
             train_json,
             test_json,
             label_type,
             preprocessor,
             feature_store=(store if use_precomputed_features else None),
-            workers=0
+            workers=0,
+            dataset_manager=dataset_manager,
+            generalization_dataset_manager=generalization_dataset_manager
         )
 
     if use_precomputed_features:
@@ -177,6 +195,13 @@ def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType,
             store=store,
             device=device
         )
+        if generalization_dataset_manager is not None:
+            precompute_features(
+                model=model,
+                dataset=generalization_loader.dataset,
+                store=store,
+                device=device
+            )
 
     if use_precomputed_features:
         feat_dim = train_loader.dataset[0][1].flatten().shape[0]
@@ -186,5 +211,8 @@ def benchmark(model, preprocessor, train_json, test_json, label_type: LabelType,
     classifier = SimpleClassifier(feat_dim, num_classes, TrainConfig.output_activation).to(device)
 
     classifier = train_classifier(model, classifier, train_loader, test_loader, device, label_type)
+    print("Computing score on test set:\n")
     score(model, classifier, score_loader, label_type, device)
-
+    if generalization_dataset_manager is not None:
+        print("Computing score on generalization set:\n")
+        score(model, classifier, generalization_loader, label_type, device)

@@ -1,0 +1,8 @@
+{
+  "path_to_raw_data" : "./2025_LOS",
+  "feature_store_path" : "./precomputed",
+  "learning_rate" : 1e-3,
+  "momentum" : 0.9,
+  "epochs" : 10,
+  "output_activation" : "none"
+}
