@@ -86,8 +86,10 @@ class DistanceDatasetBuilder(DatasetBuilder):
         usable_per_bin = min(self.dataset_size, usable_count)
 
         if self.full_folder:
-            train_sz = None
-            test_sz = 0
+            gen_set = []
+            for los, path in samples:
+                gen_set.append((los["distance"], path))
+            return "", "", gen_set, []
         else:
             train_sz = int(self.train_split * usable_per_bin)
             test_sz = usable_per_bin
