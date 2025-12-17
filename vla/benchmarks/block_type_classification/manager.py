@@ -1,8 +1,8 @@
 import json
 from torch.utils.data import DataLoader
-from builders import DistanceDatasetBuilder, TypeDatasetBuilder
-from dataset import LOSDataset
-from config import LabelType
+from .builders import DistanceDatasetBuilder, TypeDatasetBuilder
+from .dataset import LOSDataset
+from .config import LabelType
 
 
 class DatasetManager:

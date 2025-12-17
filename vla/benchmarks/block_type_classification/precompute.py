@@ -3,7 +3,7 @@ from tqdm import tqdm
 
 def precompute_features(model, dataset, store, device):
     """
-    Run DINO on all images once and cache features.
+    Run the model on all images once and cache features.
     dataset.items = list of (label, path_stem)
     """
 
