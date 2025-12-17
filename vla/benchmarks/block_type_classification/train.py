@@ -65,7 +65,7 @@ def train_classifier(
                 feats = model.encode(images)
             else:
                 feats = images
-
+            feats = feats.to(torch.float32)
             out = classifier(feats)
 
             loss = criterion(out, labels)
@@ -86,6 +86,7 @@ def train_classifier(
                     feats = model.encode(images)
                 else:
                     feats = images
+                feats = feats.to(torch.float32)
                 out = classifier(feats)
                 total_test += criterion(out, labels).item()
 
@@ -126,6 +127,7 @@ def score(model, classifier, loader, label_type: LabelType, device):
                     feats = model.encode(img.to(device))
                 else:
                     feats = img.to(device)
+                feats = feats.to(torch.float32)
                 out = classifier(feats)
                 if out.argmax() == y.argmax():
                     correct += 1
@@ -140,6 +142,7 @@ def score(model, classifier, loader, label_type: LabelType, device):
                     feats = model.encode(img.to(device))
                 else:
                     feats = img.to(device)
+                feats = feats.to(torch.float32)
                 out = classifier(feats)
                 mse += loss(out, y.to(device)).item()
         print("Average MSE:", mse / len(loader))
@@ -208,7 +211,7 @@ def benchmark(model, preprocessor, train_json="train_los_dataset.json", test_jso
     else:
         feat_dim = extract_features_size(model, train_loader, device)
 
-    classifier = SimpleClassifier(feat_dim, num_classes, TrainConfig.output_activation, num_hidden_layers=2).to(device)
+    classifier = SimpleClassifier(feat_dim, num_classes, TrainConfig.output_activation, num_hidden_layers=0).to(device)
 
     classifier = train_classifier(model, classifier, train_loader, test_loader, device, label_type)
     print("Computing score on test set:\n")
