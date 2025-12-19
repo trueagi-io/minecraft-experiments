@@ -9,7 +9,7 @@ class SimpleClassifier(nn.Module):
         num_features,
         output_size,
         output_activation,
-        hidden_size=512,
+        hidden_size=[512],
         num_hidden_layers=1
     ):
         """
@@ -29,16 +29,16 @@ class SimpleClassifier(nn.Module):
             layers.append(nn.Linear(num_features, output_size))
         else:
             # first layer
-            layers.append(nn.Linear(num_features, hidden_size))
+            layers.append(nn.Linear(num_features, hidden_size[0]))
             layers.append(nn.ReLU())
 
             # intermediate hidden layers
-            for _ in range(num_hidden_layers - 1):
-                layers.append(nn.Linear(hidden_size, hidden_size))
+            for i in range(num_hidden_layers - 1):
+                layers.append(nn.Linear(hidden_size[i], hidden_size[i+1]))
                 layers.append(nn.ReLU())
 
             # output layer
-            layers.append(nn.Linear(hidden_size, output_size))
+            layers.append(nn.Linear(hidden_size[-1], output_size))
 
         self.model = nn.Sequential(*layers)
 
