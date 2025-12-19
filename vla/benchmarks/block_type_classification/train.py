@@ -211,7 +211,9 @@ def benchmark(model, preprocessor, train_json="train_los_dataset.json", test_jso
     else:
         feat_dim = extract_features_size(model, train_loader, device)
 
-    classifier = SimpleClassifier(feat_dim, num_classes, TrainConfig.output_activation, num_hidden_layers=0).to(device)
+    classifier = SimpleClassifier(feat_dim, num_classes, TrainConfig.output_activation,
+                                  num_hidden_layers=TrainConfig.num_layers,
+                                  hidden_size=TrainConfig.layers_sizes).to(device)
 
     classifier = train_classifier(model, classifier, train_loader, test_loader, device, label_type)
     print("Computing score on test set:\n")
