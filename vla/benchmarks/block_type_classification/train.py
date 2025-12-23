@@ -3,11 +3,11 @@ import json
 import torch
 from torch import nn
 from tqdm import tqdm
-from config import TrainConfig, LabelType, ConfigPaths, construct_configs
-from manager import DatasetManager, make_dataloaders
-from model import SimpleClassifier
-from features import FeatureStore
-from precompute import precompute_features
+from .config import TrainConfig, LabelType, ConfigPaths, construct_configs
+from .manager import DatasetManager, make_dataloaders
+from .model import SimpleClassifier
+from .features import FeatureStore
+from .precompute import precompute_features
 
 
 def extract_feature_dim(model, loader, device):
