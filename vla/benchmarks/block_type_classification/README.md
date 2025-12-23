@@ -31,7 +31,16 @@ Implements the **training and evaluation pipeline**.
   - Accuracy for type classification
  - Provides helper function:
    - `extract_features_size(model, loader)` – determines the classifier input dimension dynamically.
-
+- For benchmark purposes contains `benchmark` function
+  - Required input parameters:
+    - **model** is the model which used to extract features from the image tensor. Must contain `encode` function which takes image tensor as input and outputs features.
+    - **preprocessor** is the preprocessor sequence which is applied to the input image. Preprocessor sequence must contain `T.ToTensor()` and may contain resize, normalize etc.
+    - either **train_json** and **test_json** or **random_seed**. In one case, dataset is pre-prepared and saved into json files (see **dataset_index_creation_example.py**). In case of **random_seed** as input dataset is being created in the runtime so no need in json files.
+  - Optional input parameters:
+    - **label_type** either `LabelType.DISTANCE` or `LabelType.TYPE_CLASSIFICATION` (from `config.py`). Depends on this parameter, classifier or regression model will be created and trained.
+    - **use_precomputed_features** if set to True, features for all input images will be pre-computed and saved to prevent feature computing while train and test. That helps to reduce time needed to run benchmark. Though requires lots of disk space (depends on which features are used).
+    - **generalization_set_folder** is used to test generalization capability of the trained model. This folder will be used only to compute accuracy/mse in the end of training process.
+    - **config_path** path to the json file which contains parameters used to create and train model. Also contains pathes to the dataset folder and folder which will contain precomputed features. See `example.json`.
 ---
 
 ## 🟩 **model.py**

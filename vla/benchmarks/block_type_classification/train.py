@@ -3,11 +3,11 @@ import json
 import torch
 from torch import nn
 from tqdm import tqdm
-from .config import TrainConfig, LabelType, ConfigPaths, construct_configs
-from .manager import DatasetManager, make_dataloaders
-from .model import SimpleClassifier
-from .features import FeatureStore
-from .precompute import precompute_features
+from config import TrainConfig, LabelType, ConfigPaths, construct_configs
+from manager import DatasetManager, make_dataloaders
+from model import SimpleClassifier
+from features import FeatureStore
+from precompute import precompute_features
 
 
 def extract_feature_dim(model, loader, device):
@@ -77,31 +77,33 @@ def train_classifier(
         avg_train = total_loss / len(train_loader)
         print(f"[Epoch {epoch+1}] Train Loss: {avg_train:.4f}")
 
-        classifier.eval()
-        total_test = 0
-        with torch.no_grad():
-            for labels, images in test_loader:
-                images, labels = images.to(device), labels.to(device)
-                if train_loader.dataset.feature_store is None:
-                    feats = model.encode(images)
-                else:
-                    feats = images
-                feats = feats.to(torch.float32)
-                out = classifier(feats)
-                total_test += criterion(out, labels).item()
+        if epoch % 5 == 0:
+            print(f"Testing, epoch {epoch+1}")
+            classifier.eval()
+            total_test = 0
+            with torch.no_grad():
+                for labels, images in test_loader:
+                    images, labels = images.to(device), labels.to(device)
+                    if train_loader.dataset.feature_store is None:
+                        feats = model.encode(images)
+                    else:
+                        feats = images
+                    feats = feats.to(torch.float32)
+                    out = classifier(feats)
+                    total_test += criterion(out, labels).item()
 
-        avg_test = total_test / len(test_loader)
-        print(f"[Epoch {epoch+1}] Test  Loss: {avg_test:.4f}")
+            avg_test = total_test / len(test_loader)
+            print(f"[Epoch {epoch+1}] Test  Loss: {avg_test:.4f}")
 
-        if avg_test < best_loss:
-            best_loss = avg_test
-            torch.save({
-                "epoch": epoch,
-                "model_state": classifier.state_dict(),
-                "optimizer_state": optimizer.state_dict(),
-                "test_loss": best_loss
-            }, best_path)
-            print(f"Saved BEST checkpoint at epoch {epoch+1} → {best_path}")
+            if avg_test < best_loss:
+                best_loss = avg_test
+                torch.save({
+                    "epoch": epoch,
+                    "model_state": classifier.state_dict(),
+                    "optimizer_state": optimizer.state_dict(),
+                    "test_loss": best_loss
+                }, best_path)
+                print(f"Saved BEST checkpoint at epoch {epoch+1} → {best_path}")
 
         # Save last epoch (always)
         torch.save({
