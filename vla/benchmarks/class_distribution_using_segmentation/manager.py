@@ -29,17 +29,6 @@ def load_json(path):
         return json.load(f)
 
 
-def flatten_class_map(mapping, pre_classes=None):
-    classes = list(mapping.keys()) if pre_classes is None else pre_classes
-    flat = []
-    for idx, c in enumerate(classes):
-        if c not in mapping:
-            continue
-        for p in mapping[c]:
-            flat.append((idx, p))
-    return flat, len(classes)
-
-
 def make_dataloaders(train_json, test_json, transform=None, feature_store=None, batch=32, workers=2, dataset_manager=None,
                      generalization_dataset_manager=None):
 

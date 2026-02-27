@@ -12,13 +12,6 @@ from precompute import precompute_features
 
 ttype = torch.float32
 
-def extract_feature_dim(model, loader, device):
-    for _, (_, img) in enumerate(loader):
-        with torch.no_grad():
-            feat = model.encode(img.to(device))
-        return feat.flatten().shape[0]
-
-
 def extract_features_size(model, train_loader, device):
     for _, data in enumerate(train_loader, 0):
         _, img = data

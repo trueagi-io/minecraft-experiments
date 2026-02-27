@@ -1,6 +1,5 @@
 from DinoV2Features import Dinov2Features_full, preprocessor
 from train import benchmark
-from config import construct_configs
 
 
 if __name__ == "__main__":
