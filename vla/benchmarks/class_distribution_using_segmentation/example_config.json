@@ -1,0 +1,10 @@
+{
+  "path_to_raw_data" : "./2026_LOS_SEGM",
+  "feature_store_path" : "./precomputed",
+  "learning_rate" : 1e-3,
+  "momentum" : 0.9,
+  "epochs" : 20,
+  "output_activation" : "none",
+  "num_layers" : 2,
+  "layers_sizes" : [128, 128]
+}
