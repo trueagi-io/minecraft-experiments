@@ -153,9 +153,8 @@ def score(model, classifier, loader, label_type: LabelType, device):
         raise ValueError(f"Unsupported label type {label_type}")
 
 
-def benchmark(model, preprocessor, train_json="train_los_dataset.json", test_json="test_los_dataset.json",
-              label_type=LabelType.DISTANCE, use_precomputed_features=True, random_seed=None,
-              generalization_set_folder="", config_path="example_config.json"):
+def benchmark(model, preprocessor, label_type=LabelType.DISTANCE,
+              use_precomputed_features=True, random_seed=None, config_path="example_config.json"):
 
     with open(config_path, 'r') as file:
         config_dict = json.load(file)
@@ -166,9 +165,9 @@ def benchmark(model, preprocessor, train_json="train_los_dataset.json", test_jso
         dataset_manager = DatasetManager(ConfigPaths.path_to_raw_data, label_type, random_seed=random_seed)
 
     generalization_dataset_manager = None
-    if generalization_set_folder != "":
-        generalization_dataset_manager = DatasetManager(generalization_set_folder, label_type, random_seed=random_seed,
-                                                        full_folder=True)
+    if ConfigPaths.generalization_set_folder:
+        generalization_dataset_manager = DatasetManager(ConfigPaths.generalization_set_folder, label_type,
+                                                        random_seed=random_seed, full_folder=True)
 
     store = FeatureStore(ConfigPaths.feature_store_path)
 
@@ -176,8 +175,8 @@ def benchmark(model, preprocessor, train_json="train_los_dataset.json", test_jso
 
     train_loader, test_loader, score_loader, generalization_loader, num_classes = \
         make_dataloaders(
-            train_json,
-            test_json,
+            ConfigPaths.train_json,
+            ConfigPaths.test_json,
             label_type,
             preprocessor,
             feature_store=(store if use_precomputed_features else None),
