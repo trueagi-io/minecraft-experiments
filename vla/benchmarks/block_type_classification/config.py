@@ -8,6 +8,9 @@ class LabelType(str, Enum):
 class ConfigPaths:
     path_to_raw_data = None
     feature_store_path = "./precomputed"
+    generalization_set_folder = ""
+    train_json = "train_los_dataset.json"
+    test_json = "test_los_dataset.json"
 
 class TrainConfig:
     learning_rate = 1e-3
@@ -18,6 +21,7 @@ class TrainConfig:
     layers_sizes = [512]
 
 def construct_configs(path_to_raw_data=None, feature_store_path=None,
+        generalization_set_folder="", train_json="train_los_dataset.json", test_json="test_los_dataset.json",
         learning_rate=1e-3, momentum=0.9, epochs=10, output_activation="none", num_layers=1, layers_sizes=[512]):
     TrainConfig.learning_rate = learning_rate
     TrainConfig.momentum = momentum
@@ -34,3 +38,6 @@ def construct_configs(path_to_raw_data=None, feature_store_path=None,
                       "default folder ./precomputed will be used to store features")
     else:
         ConfigPaths.feature_store_path = feature_store_path
+    ConfigPaths.generalization_set_folder = generalization_set_folder
+    ConfigPaths.train_json = train_json
+    ConfigPaths.test_json = test_json

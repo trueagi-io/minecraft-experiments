@@ -29,7 +29,6 @@ if __name__ == "__main__":
         SiglipWrapper(),
         preprocess,
         random_seed=10,
-        generalization_set_folder="./2026_LOS_SEGM/Night_clear/Mountain_Range",
         config_path="example_config.json",
         use_precomputed_features=True
     )

@@ -35,9 +35,8 @@ class ModelWrapper:
 benchmark(
     ModelWrapper(),
     preprocess,
-    label_type=LabelType.TYPE_CLASSIFICATION, #LabelType.DISTANCE, 
+    label_type=LabelType.TYPE_CLASSIFICATION,
     random_seed=10,
-    generalization_set_folder="./2025_LOS/Night_clear/Mountain_Range",
     config_path="example_config.json"
 )
  

@@ -1,10 +1,15 @@
+import json
 from manager import DatasetManager
-from config import LabelType
+from config import LabelType, ConfigPaths, construct_configs
 
 
 if __name__ == "__main__":
+    with open("example_config.json", 'r') as f:
+        config_dict = json.load(f)
+    construct_configs(**config_dict)
+
     manager = DatasetManager(
-        directory="./2025_LOS/Day_clear/",
+        directory=ConfigPaths.path_to_raw_data,
         label_type=LabelType.DISTANCE,
         dataset_size=200,
         train_split=0.25,

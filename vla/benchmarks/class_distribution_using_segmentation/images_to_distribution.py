@@ -1,11 +1,15 @@
 # This file is used to convert segmented images to npy files which contains class distribution
+import json
 import numpy as np
 from pathlib import Path
 from PIL import Image
 
+with open("example_config.json", 'r') as f:
+    config = json.load(f)
+
 paths = []
 unique_colors_list = []
-basepath = Path("./2026_LOS_SEGM")
+basepath = Path(config["path_to_raw_data"])
 segmentation_subfolders = list(basepath.rglob("segmentation"))
 
 stub = 0
